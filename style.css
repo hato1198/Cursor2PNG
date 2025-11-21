@@ -1,0 +1,84 @@
+body {
+    background-color: var(--bs-body-bg);
+}
+
+h5 {
+    font-weight: 400;
+}
+
+.navbar {
+    transition: background-color 0.3s ease;
+}
+
+.card {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.drop-zone {
+    border: 2px dashed #ccc;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.drop-zone.dragover {
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary);
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.file-list-container {
+    min-height: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#file-list .list-group-item {
+    cursor: pointer;
+    word-break: break-all;
+}
+
+#info-text {
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background-color: var(--bs-tertiary-bg);
+    height: 100%;
+    margin-bottom: 0;
+}
+
+#download-info-btn {
+    margin-bottom: 0.8rem!important;
+}
+
+.preview-box {
+    background-color: #f0f0f0;
+    background-image:
+        linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    min-height: 200px;
+    overflow: hidden;
+    padding: 10px;
+}
+
+#preview-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated; /* Cursors are best viewed without anti-aliasing */
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+#download-image-btn {
+    margin-bottom: 0.8rem!important;
+}
+
+#placeholder-view .display-1 {
+    color: var(--bs-secondary-bg-subtle) !important;
+}
