@@ -192,8 +192,17 @@ class ConverterApp(TkinterDnD.Tk):
         preview_frame.grid(row=2, column=1, sticky="nsew", padx=(10, 0))
         preview_frame.grid_rowconfigure(0, weight=1)
         preview_frame.grid_columnconfigure(0, weight=1)
-        self.preview_label = tb.Label(preview_frame)
-        self.preview_label.grid(row=0, column=0, sticky="nsew")
+        
+        # Scrollable Canvas for Preview
+        self.preview_canvas = tk.Canvas(preview_frame, highlightthickness=0)
+        self.preview_canvas.grid(row=0, column=0, sticky="nsew")
+        
+        pv_v_scroll = tb.Scrollbar(preview_frame, orient=VERTICAL, command=self.preview_canvas.yview)
+        pv_v_scroll.grid(row=0, column=1, sticky="ns")
+        pv_h_scroll = tb.Scrollbar(preview_frame, orient=HORIZONTAL, command=self.preview_canvas.xview)
+        pv_h_scroll.grid(row=1, column=0, sticky="ew")
+        
+        self.preview_canvas.config(yscrollcommand=pv_v_scroll.set, xscrollcommand=pv_h_scroll.set)
 
         button_frame = tb.Frame(main_frame)
         button_frame.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(10, 0))
@@ -247,7 +256,8 @@ class ConverterApp(TkinterDnD.Tk):
         
     def clear_info_preview(self):
         self.info_text.config(state="normal"); self.info_text.delete(1.0, tk.END); self.info_text.config(state="disabled")
-        self.preview_label.config(image=''); self.preview_label.image = None
+        self.preview_canvas.delete("all")
+        self.preview_canvas.image = None
 
     def on_listbox_select(self, event):
         selection_indices = self.file_listbox.curselection()
@@ -280,14 +290,23 @@ class ConverterApp(TkinterDnD.Tk):
         self.info_text.insert(tk.END, info_str)
         self.info_text.config(state="disabled")
         img = result['image']
-        max_h = 300
-        if img.height > max_h:
-            ratio = max_h / img.height
-            new_w = int(img.width * ratio)
-            img = img.resize((new_w, max_h), Image.Resampling.NEAREST)
+        
+        # 改善点: 小さい画像は拡大し、大きい画像（縦長Aniなど）は縮小せずスクロールで表示する
+        scale = 1
+        if img.width < 64:
+             scale = 4 if img.width <= 16 else 2
+        
+        if scale > 1:
+            new_w = img.width * scale
+            new_h = img.height * scale
+            img = img.resize((new_w, new_h), Image.Resampling.NEAREST)
+
         photo = ImageTk.PhotoImage(img)
-        self.preview_label.config(image=photo)
-        self.preview_label.image = photo
+        
+        self.preview_canvas.delete("all")
+        self.preview_canvas.create_image(0, 0, image=photo, anchor="nw")
+        self.preview_canvas.image = photo # 参照を保持
+        self.preview_canvas.config(scrollregion=self.preview_canvas.bbox("all"))
 
     def start_conversion(self):
         if not self.file_paths:
