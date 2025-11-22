@@ -246,20 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = previewCanvas.getContext('2d');
         const img = result.image;
         
-        const maxPreviewSize = 600;
-        let previewWidth = img.width;
-        let previewHeight = img.height;
-        if (previewHeight > maxPreviewSize || previewWidth > maxPreviewSize) {
-            const ratio = Math.min(maxPreviewSize / previewHeight, maxPreviewSize / previewWidth);
-            previewHeight = Math.floor(img.height * ratio);
-            previewWidth = Math.floor(img.width * ratio);
-        }
-        
-        previewCanvas.width = previewWidth;
-        previewCanvas.height = previewHeight;
-        ctx.clearRect(0, 0, previewWidth, previewHeight);
+        previewCanvas.width = img.width;
+        previewCanvas.height = img.height;
+        ctx.clearRect(0, 0, img.width, img.height);
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(img, 0, 0, previewWidth, previewHeight);
+        ctx.drawImage(img, 0, 0, img.width, img.height);
     }
     
     function generateInfoText(result, forFile = false) {
