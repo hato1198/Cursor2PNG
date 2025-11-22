@@ -6,6 +6,11 @@ import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox
 from PIL import Image, ImageTk
+
+# Fix for Pillow 10.0.0 removing ANTIALIAS which is used by ani_file
+if not hasattr(Image, 'ANTIALIAS'):
+    Image.ANTIALIAS = Image.Resampling.LANCZOS
+
 import io
 import os
 import struct
@@ -89,7 +94,7 @@ class CursorConverter:
         return {
             "type": self.type, "frames": 1, "duration": 1.0, "hotspot": final_hotspot,
             "image": final_img, "original_filename": self.filename,
-            "frame_size": final_img.size # <<<--- 改善点: サイズ情報を追加
+            "frame_size": final_img.size
         }
 
     def _process_ani(self):
@@ -126,7 +131,7 @@ class CursorConverter:
         return {
             "type": self.type, "frames": total_frames, "duration": min_duration,
             "hotspot": final_hotspot, "image": sprite_sheet, "original_filename": self.filename,
-            "frame_size": frame_size # <<<--- 改善点: サイズ情報を追加
+            "frame_size": frame_size
         }
 
 class ConverterApp(TkinterDnD.Tk):
@@ -216,7 +221,6 @@ class ConverterApp(TkinterDnD.Tk):
                 self.file_paths.append(path)
                 self.file_listbox.insert(tk.END, os.path.basename(path))
 
-        # <<<--- UI改善点: ファイル追加後に先頭を自動選択
         if self.file_listbox.size() > 0 and not had_selection:
             self.file_listbox.selection_set(0)
             self.on_listbox_select(None) # イベントを強制的に呼び出して表示を更新
@@ -306,7 +310,6 @@ class ConverterApp(TkinterDnD.Tk):
                 png_path = os.path.join(output_dir, f"{base_name}.png")
                 result['image'].save(png_path, 'PNG')
                 info_path = os.path.join(output_dir, f"{base_name}_info.txt")
-                # <<<--- 改善点: 保存するテキストにもSizeを追加
                 with open(info_path, 'w', encoding='utf-8') as f:
                     f.write(f"Source: {result['original_filename']}\n")
                     f.write("---------------------------\n")
