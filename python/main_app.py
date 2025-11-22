@@ -293,8 +293,8 @@ class ConverterApp(TkinterDnD.Tk):
         
         # 改善点: 小さい画像は拡大し、大きい画像（縦長Aniなど）は縮小せずスクロールで表示する
         scale = 1
-        if img.width < 64:
-             scale = 4 if img.width <= 16 else 2
+        if img.height < 64:
+             scale = 4 if img.height <= 16 else 2
         
         if scale > 1:
             new_w = img.width * scale
