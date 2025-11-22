@@ -19,7 +19,7 @@ import math
 import threading
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
-# --- 定数定義 ---
+# --- Constant Definitions ---
 TYPE_MAP = {
     ("斜め", "縮小1", "diagonal", "resize 1"): "Window NW-SE, Window NW, Window SE",
     ("斜め", "縮小2", "diagonal", "resize 2"): "Window NE-SW, Window NE, Window SW",
@@ -117,7 +117,7 @@ class CursorConverter:
                     scale = self.target_size / original_size[0] if original_size[0] > 0 else 1.0
                     final_hotspot = (int(hotspot[0] * scale), int(hotspot[1] * scale))
                  img = img.resize((self.target_size, self.target_size), Image.Resampling.NEAREST)
-            if i == 0: frame_size = img.size # 最初のフレームのサイズを代表とする
+            if i == 0: frame_size = img.size # Use the size of the first frame as representative
             for _ in range(frame_multipliers[i]): output_frames.append(img)
             if img.width > max_width: max_width = img.width
         total_height = sum(f.height for f in output_frames)
@@ -164,7 +164,7 @@ class ConverterApp(TkinterDnD.Tk):
         list_frame.grid_columnconfigure(0, weight=1)
         self.file_listbox = tk.Listbox(list_frame, selectmode=tk.SINGLE, height=8)
         self.file_listbox.grid(row=0, column=0, sticky="nsew")
-        # Listboxの選択色をttkbootstrapのINFOカラーに設定する
+        # Set Listbox selection color to ttkbootstrap INFO color
         select_bg_color = self.style.colors.primary
         select_fg_color = 'white'
         self.file_listbox.config(
@@ -232,7 +232,7 @@ class ConverterApp(TkinterDnD.Tk):
 
         if self.file_listbox.size() > 0 and not had_selection:
             self.file_listbox.selection_set(0)
-            self.on_listbox_select(None) # イベントを強制的に呼び出して表示を更新
+            self.on_listbox_select(None) # Force event call to update display
 
     def remove_selected_file(self):
         selection_indices = self.file_listbox.curselection()
@@ -242,7 +242,7 @@ class ConverterApp(TkinterDnD.Tk):
         self.file_listbox.delete(selected_index)
         self.file_listbox.selection_clear(0, tk.END)
         self.clear_info_preview()
-        # 次の項目があればそれを選択
+        # Select the next item if available
         if self.file_listbox.size() > 0:
             next_index = min(selected_index, self.file_listbox.size() - 1)
             self.file_listbox.selection_set(next_index)
@@ -264,7 +264,7 @@ class ConverterApp(TkinterDnD.Tk):
         if not selection_indices: return
         selected_index = selection_indices[0]
         path = self.file_paths[selected_index]
-        # リサイズ値が変更された可能性を考慮し、選択のたびに結果を再生成する
+        # Regenerate result on selection to account for potential resize value changes
         try:
             target_size = self.size_var.get()
             converter = CursorConverter(path, target_size)
@@ -291,7 +291,7 @@ class ConverterApp(TkinterDnD.Tk):
         self.info_text.config(state="disabled")
         img = result['image']
         
-        # 改善点: 小さい画像は拡大し、大きい画像（縦長Aniなど）は縮小せずスクロールで表示する
+        # Improvement: Scale up small images, do not scale down large images (e.g., tall Ani), display with scroll
         scale = 1
         if img.height < 64:
              scale = 4 if img.height <= 16 else 2
@@ -305,7 +305,7 @@ class ConverterApp(TkinterDnD.Tk):
         
         self.preview_canvas.delete("all")
         self.preview_canvas.create_image(0, 0, image=photo, anchor="nw")
-        self.preview_canvas.image = photo # 参照を保持
+        self.preview_canvas.image = photo # Keep reference
         self.preview_canvas.config(scrollregion=self.preview_canvas.bbox("all"))
 
     def start_conversion(self):

@@ -7,7 +7,7 @@ def analyze_ani(file_path):
     try:
         af = ani_file.open(file_path, 'r')
 
-        # レート情報を取得
+        # Get rate information
         rates = af.getrate()
         print(f"【レート情報 (getrate() の結果)】")
         if rates:
@@ -16,7 +16,7 @@ def analyze_ani(file_path):
         else:
             print(f"  - 取得失敗: {rates} (Noneまたは空のリスト)")
 
-        # フレームデータを取得
+        # Get frame data
         frames_data = af.getframesdata()
         print(f"\n【フレーム数 (getframesdata() の結果)】")
         if frames_data:
@@ -24,7 +24,7 @@ def analyze_ani(file_path):
         else:
             print("  - フレームが見つかりません")
 
-        # シーケンス情報を取得
+        # Get sequence information
         seq = af.getseq()
         print(f"\n【シーケンス情報 (getseq() の結果)】")
         if seq:
