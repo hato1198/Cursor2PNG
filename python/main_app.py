@@ -142,6 +142,7 @@ class ConverterApp(TkinterDnD.Tk):
         self.minsize(800, 600)
         self.file_paths = []
         self.results = {}
+        self.current_resize_value = 0 # Stores the currently applied resize value
         self.setup_ui()
 
     def setup_ui(self):
@@ -152,14 +153,16 @@ class ConverterApp(TkinterDnD.Tk):
         main_frame.grid_columnconfigure(0, weight=1)
 
         # --- List Frame (Row 0, Col 0) ---
-        list_frame = tb.Labelframe(main_frame, text="変換対象ファイル (ここにドラッグ＆ドロップ)", padding=10)
+        list_frame = tb.Labelframe(main_frame, text="変換対象ファイル", padding=10)
         list_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
-        list_frame.grid_rowconfigure(0, weight=1)
+        list_frame.grid_rowconfigure(1, weight=1)
         list_frame.grid_columnconfigure(0, weight=1)
+
+        tb.Label(list_frame, text="ここにドラッグ＆ドロップ または 下のボタンから追加:").grid(row=0, column=0, columnspan=2, pady=(0, 5), sticky="w")
         
         self.file_listbox = tk.Listbox(list_frame, selectmode=tk.SINGLE, height=8)
-        self.file_listbox.grid(row=0, column=0, sticky="nsew")
-        # Set Listbox selection color to ttkbootstrap INFO color
+        self.file_listbox.grid(row=1, column=0, sticky="nsew")
+
         select_bg_color = self.style.colors.primary
         select_fg_color = 'white'
         self.file_listbox.config(
@@ -167,7 +170,7 @@ class ConverterApp(TkinterDnD.Tk):
             selectforeground=select_fg_color
         )
         scrollbar = tb.Scrollbar(list_frame, orient=VERTICAL, command=self.file_listbox.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns")
+        scrollbar.grid(row=1, column=1, sticky="ns")
         self.file_listbox.config(yscrollcommand=scrollbar.set)
         self.file_listbox.drop_target_register(DND_FILES)
         self.file_listbox.dnd_bind('<<Drop>>', self.on_drop)
@@ -181,11 +184,17 @@ class ConverterApp(TkinterDnD.Tk):
         # Settings layout optimized for side panel
         tb.Label(settings_frame, text="リサイズ (px):").grid(row=0, column=0, padx=5, pady=(0, 2), sticky="w")
         
-        self.size_var = tb.IntVar(value=0)
+        self.size_var = tb.IntVar(value=self.current_resize_value)
         size_entry = tb.Entry(settings_frame, textvariable=self.size_var, width=10)
         size_entry.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="ew")
         
-        tb.Label(settings_frame, text="(0で無効)", bootstyle="secondary").grid(row=2, column=0, padx=5, pady=0, sticky="w")
+        tb.Label(settings_frame, text="(0で無効)", bootstyle="secondary").grid(row=2, column=0, padx=5, pady=(0, 10), sticky="w")
+
+        # Buttons for Settings
+        btn_frame = tb.Frame(settings_frame)
+        btn_frame.grid(row=3, column=0, sticky="ew", padx=5)
+        tb.Button(btn_frame, text="適用", command=self.apply_settings, bootstyle="success", width=6).pack(side=RIGHT, padx=(5, 0))
+        tb.Button(btn_frame, text="キャンセル", command=self.cancel_settings, bootstyle="danger", width=8).pack(side=RIGHT)
         
         # --- Result Frame (Row 1, Col 0) ---
         result_frame = tb.Labelframe(main_frame, text="Mousecape 設定情報", padding=10)
@@ -271,14 +280,31 @@ class ConverterApp(TkinterDnD.Tk):
         self.preview_canvas.delete("all")
         self.preview_canvas.image = None
 
+    def apply_settings(self):
+        try:
+            val = self.size_var.get()
+            if val < 0: raise ValueError("Negative value")
+            self.current_resize_value = val
+            self.refresh_preview()
+        except Exception:
+            self.cancel_settings() # Revert on invalid input
+
+    def cancel_settings(self):
+        self.size_var.set(self.current_resize_value)
+
     def on_listbox_select(self, event):
+        self.refresh_preview()
+
+    def refresh_preview(self):
         selection_indices = self.file_listbox.curselection()
         if not selection_indices: return
         selected_index = selection_indices[0]
         path = self.file_paths[selected_index]
-        # Regenerate result on selection to account for potential resize value changes
+        
+        # Use the applied value, not strictly what is in the entry box (unless applied)
+        target_size = self.current_resize_value
+        
         try:
-            target_size = self.size_var.get()
             converter = CursorConverter(path, target_size)
             result = converter.convert()
             self.results[path] = result
@@ -316,12 +342,12 @@ class ConverterApp(TkinterDnD.Tk):
         if not output_dir: return
         self.progress['value'] = 0
         self.progress['maximum'] = len(self.file_paths)
-        thread = threading.Thread(target=self.run_conversion_thread, args=(output_dir,))
+        # Pass the *applied* value to the thread
+        thread = threading.Thread(target=self.run_conversion_thread, args=(output_dir, self.current_resize_value))
         thread.start()
 
-    def run_conversion_thread(self, output_dir):
+    def run_conversion_thread(self, output_dir, target_size):
         errors = []
-        target_size = self.size_var.get()
         for i, path in enumerate(self.file_paths):
             try:
                 converter = CursorConverter(path, target_size)
