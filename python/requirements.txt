@@ -1,0 +1,4 @@
+Pillow
+ttkbootstrap
+tkinterdnd2
+ani-file

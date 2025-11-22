@@ -14,7 +14,7 @@ import math
 import threading
 from tkinterdnd2 import DND_FILES, TkinterDnD
 
-# --- 定数定義 (変更なし) ---
+# --- 定数定義 ---
 TYPE_MAP = {
     ("斜め", "縮小1", "diagonal", "resize 1"): "Window NW-SE, Window NW, Window SE",
     ("斜め", "縮小2", "diagonal", "resize 2"): "Window NE-SW, Window NE, Window SW",
@@ -32,7 +32,6 @@ TYPE_MAP = {
 }
 
 class CursorConverter:
-    # (変更なし)
     def __init__(self, file_path, target_size=None):
         self.file_path = file_path
         self.filename = os.path.basename(file_path)
@@ -195,7 +194,6 @@ class ConverterApp(TkinterDnD.Tk):
         button_frame.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(10, 0))
         button_frame.grid_columnconfigure(3, weight=1)
 
-        # <<<--- UI改善点: ボタンのスタイルと文言を変更
         tb.Button(button_frame, text="ファイルを追加...", command=self.add_files, bootstyle=PRIMARY).grid(row=0, column=0, padx=5)
         tb.Button(button_frame, text="選択中のファイルを削除", command=self.remove_selected_file, bootstyle=DANGER).grid(row=0, column=1, padx=5)
         tb.Button(button_frame, text="リセット", command=self.clear_all, bootstyle=DANGER).grid(row=0, column=2, padx=5)
@@ -266,7 +264,6 @@ class ConverterApp(TkinterDnD.Tk):
     def display_result(self, result):
         self.info_text.config(state="normal")
         self.info_text.delete(1.0, tk.END)
-        # <<<--- 改善点: ホットスポットとサイズの表示形式を変更
         info_str = (
             f"ファイル名: {result['original_filename']}\n"
             f"-------------------------------------\n"
