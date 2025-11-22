@@ -147,21 +147,16 @@ class ConverterApp(TkinterDnD.Tk):
     def setup_ui(self):
         main_frame = tb.Frame(self, padding=15)
         main_frame.pack(fill=BOTH, expand=YES)
-        main_frame.grid_rowconfigure(2, weight=1)
+        # Row 0: List & Settings, Row 1: Info & Preview, Row 2: Buttons
+        main_frame.grid_rowconfigure(1, weight=1)
         main_frame.grid_columnconfigure(0, weight=1)
 
-        settings_frame = tb.Labelframe(main_frame, text="設定", padding=10)
-        settings_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
-        settings_frame.grid_columnconfigure(1, weight=1)
-        tb.Label(settings_frame, text="リサイズ (ピクセル, 0で無効):").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        self.size_var = tb.IntVar(value=0)
-        size_entry = tb.Entry(settings_frame, textvariable=self.size_var, width=10)
-        size_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        
+        # --- List Frame (Row 0, Col 0) ---
         list_frame = tb.Labelframe(main_frame, text="変換対象ファイル (ここにドラッグ＆ドロップ)", padding=10)
-        list_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", pady=(0, 10))
+        list_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
         list_frame.grid_rowconfigure(0, weight=1)
         list_frame.grid_columnconfigure(0, weight=1)
+        
         self.file_listbox = tk.Listbox(list_frame, selectmode=tk.SINGLE, height=8)
         self.file_listbox.grid(row=0, column=0, sticky="nsew")
         # Set Listbox selection color to ttkbootstrap INFO color
@@ -178,8 +173,23 @@ class ConverterApp(TkinterDnD.Tk):
         self.file_listbox.dnd_bind('<<Drop>>', self.on_drop)
         self.file_listbox.bind("<<ListboxSelect>>", self.on_listbox_select)
 
+        # --- Settings Frame (Row 0, Col 1) ---
+        settings_frame = tb.Labelframe(main_frame, text="設定", padding=10)
+        settings_frame.grid(row=0, column=1, sticky="nsew", padx=(10, 0), pady=(0, 10))
+        settings_frame.grid_columnconfigure(0, weight=1)
+        
+        # Settings layout optimized for side panel
+        tb.Label(settings_frame, text="リサイズ (px):").grid(row=0, column=0, padx=5, pady=(0, 2), sticky="w")
+        
+        self.size_var = tb.IntVar(value=0)
+        size_entry = tb.Entry(settings_frame, textvariable=self.size_var, width=10)
+        size_entry.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="ew")
+        
+        tb.Label(settings_frame, text="(0で無効)", bootstyle="secondary").grid(row=2, column=0, padx=5, pady=0, sticky="w")
+        
+        # --- Result Frame (Row 1, Col 0) ---
         result_frame = tb.Labelframe(main_frame, text="Mousecape 設定情報", padding=10)
-        result_frame.grid(row=2, column=0, sticky="nsew")
+        result_frame.grid(row=1, column=0, sticky="nsew")
         result_frame.grid_rowconfigure(0, weight=1)
         result_frame.grid_columnconfigure(0, weight=1)
         self.info_text = tk.Text(result_frame, wrap="word", height=10, state="disabled")
@@ -188,8 +198,9 @@ class ConverterApp(TkinterDnD.Tk):
         info_scroll.grid(row=0, column=1, sticky="ns")
         self.info_text.config(yscrollcommand=info_scroll.set)
 
+        # --- Preview Frame (Row 1, Col 1) ---
         preview_frame = tb.Labelframe(main_frame, text="プレビュー", padding=10)
-        preview_frame.grid(row=2, column=1, sticky="nsew", padx=(10, 0))
+        preview_frame.grid(row=1, column=1, sticky="nsew", padx=(10, 0))
         preview_frame.grid_rowconfigure(0, weight=1)
         preview_frame.grid_columnconfigure(0, weight=1)
         
@@ -204,8 +215,9 @@ class ConverterApp(TkinterDnD.Tk):
         
         self.preview_canvas.config(yscrollcommand=pv_v_scroll.set, xscrollcommand=pv_h_scroll.set)
 
+        # --- Button Frame (Row 2) ---
         button_frame = tb.Frame(main_frame)
-        button_frame.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(10, 0))
+        button_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10, 0))
         button_frame.grid_columnconfigure(3, weight=1)
 
         tb.Button(button_frame, text="ファイルを追加...", command=self.add_files, bootstyle=PRIMARY).grid(row=0, column=0, padx=5)
@@ -290,17 +302,6 @@ class ConverterApp(TkinterDnD.Tk):
         self.info_text.insert(tk.END, info_str)
         self.info_text.config(state="disabled")
         img = result['image']
-        
-        # Improvement: Scale up small images, do not scale down large images (e.g., tall Ani), display with scroll
-        scale = 1
-        if img.height < 64:
-             scale = 4 if img.height <= 16 else 2
-        
-        if scale > 1:
-            new_w = img.width * scale
-            new_h = img.height * scale
-            img = img.resize((new_w, new_h), Image.Resampling.NEAREST)
-
         photo = ImageTk.PhotoImage(img)
         
         self.preview_canvas.delete("all")
