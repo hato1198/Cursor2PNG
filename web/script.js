@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             const baseName = result.original_filename.split('.').slice(0, -1).join('.');
+            a.href = url;
             a.download = `${baseName}_info.txt`;
             document.body.appendChild(a);
             a.click();
