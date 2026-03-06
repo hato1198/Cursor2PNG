@@ -1,5 +1,10 @@
 # check_ani.py
 import sys
+from PIL import Image
+
+if not hasattr(Image, 'ANTIALIAS'):
+    Image.ANTIALIAS = Image.Resampling.LANCZOS
+
 from ani_file import ani_file
 
 def analyze_ani(file_path):
@@ -9,7 +14,7 @@ def analyze_ani(file_path):
 
         # Get rate information
         rates = af.getrate()
-        print(f"【レート情報 (getrate() の結果)】")
+        print(f"レート情報 (getrate() の結果)")
         if rates:
             print(f"  - 取得成功: {rates}")
             print(f"  - 秒換算 (1/60秒): {[r / 60.0 for r in rates]}")
@@ -18,7 +23,7 @@ def analyze_ani(file_path):
 
         # Get frame data
         frames_data = af.getframesdata()
-        print(f"\n【フレーム数 (getframesdata() の結果)】")
+        print(f"\nフレーム数 (getframesdata() の結果)")
         if frames_data:
             print(f"  - {len(frames_data)} フレーム")
         else:
@@ -26,7 +31,7 @@ def analyze_ani(file_path):
 
         # Get sequence information
         seq = af.getseq()
-        print(f"\n【シーケンス情報 (getseq() の結果)】")
+        print(f"\nシーケンス情報 (getseq() の結果)")
         if seq:
             print(f"  - 取得成功: {seq}")
         else:
